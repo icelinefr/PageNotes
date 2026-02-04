@@ -34,6 +34,7 @@
 - [ ] **Clean Code**: Design ensures maintainability (single responsibility, DRY, type safety with TypeScript)
 - [ ] **Simple UX**: User flows are intuitive, minimize cognitive load, provide clear feedback
 - [ ] **Responsive Design**: UI components support mobile-first design with appropriate breakpoints
+- [ ] **Japanese Documentation**: All docs (spec.md, plan.md, tasks.md) and code comments written in Japanese
 - [ ] **Testing Policy**: No test code required (unit/integration/E2E tests excluded)
 - [ ] **Technology Stack**: Implementation uses TypeScript with strict type checking
 

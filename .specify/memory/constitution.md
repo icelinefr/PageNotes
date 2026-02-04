@@ -1,13 +1,18 @@
 <!--
 Sync Impact Report:
-- Version: Initial → 1.0.0
-- Added Principles: Clean Code, Simple UX, Responsive Design
-- Technology Stack: TypeScript
+- Version: 1.0.0 → 1.1.0
+- Modified Principles:
+  - Added: IV. Japanese Documentation (NEW principle for i18n consistency)
+- Added Sections: New principle section with rationale
+- Removed Sections: None
 - Templates Status:
-  - ✅ plan-template.md - Constitution Check section aligns with principles
-  - ✅ spec-template.md - User scenarios and requirements align with UX focus
-  - ✅ tasks-template.md - Test tasks marked as OPTIONAL (tests excluded per constitution)
-- Follow-up: None - all placeholders filled
+  - ✅ plan-template.md - Constitution Check section verified (language-agnostic, no update needed)
+  - ✅ spec-template.md - User scenarios template verified (language-agnostic, no update needed)
+  - ✅ tasks-template.md - Task descriptions already in Japanese, aligns with new principle
+  - ✅ commands/*.md - Agent guidance files verified (no language-specific constraints)
+- Version Bump Rationale: MINOR (1.0.0 → 1.1.0) - New principle added without breaking existing conventions
+- Follow-up: None - all existing code/docs already comply (Japanese comments/docs already in use)
+- Previous Report: Initial → 1.0.0 (ratification on 2026-02-04)
 -->
 
 # PageNotes Constitution
@@ -50,6 +55,18 @@ Sync Impact Report:
 
 **根拠**: 多様なデバイス環境でのユーザー体験を保証し、アプリケーションの到達範囲を最大化する。
 
+### IV. Japanese Documentation
+
+すべてのドキュメントとソースコードコメントは日本語で記述すること：
+
+- **仕様ドキュメント**: spec.md、plan.md、tasks.md等のプロジェクトドキュメントは日本語で記述する
+- **ソースコードコメント**: 関数・クラス・複雑なロジックの説明コメントは日本語で記述する
+- **コミットメッセージ**: Gitコミットメッセージは日本語で記述する（プレフィックスは英語可）
+- **README**: ユーザー向けドキュメント（README.md等）は日本語で記述する
+- **識別子の命名**: 変数名・関数名・クラス名は英語を使用する（TypeScript標準慣習に従う）
+
+**根拠**: プロジェクトチームの主要言語が日本語であり、日本語での記述により理解速度と保守性が向上する。コードの識別子は国際的な慣習とライブラリとの統合を考慮し英語を維持する。
+
 ## Technology Stack
 
 **Primary Language**: TypeScript
@@ -68,7 +85,7 @@ Sync Impact Report:
 - E2Eテスト（End-to-End Test）は記述しない
 
 この方針により開発速度を優先し、手動テスト・実運用フィードバックに基づく品質保証を行う。
-
+1
 **注意**: この方針は将来的に見直される可能性がある。変更時は憲章の改訂が必要。
 
 ## Governance
