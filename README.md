@@ -2,6 +2,10 @@
 
 Webページにメモを作成・表示・編集・削除できるChrome拡張機能
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)](https://www.typescriptlang.org/)
+[![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-green)](https://developer.chrome.com/docs/extensions/)
+
 ## 機能
 
 - **メモの作成**: 任意のWebページでメモを作成
@@ -117,7 +121,11 @@ dist/                  # ビルド出力（gitignored）
 
 ## ライセンス
 
-MIT
+MIT License
+
+Copyright (c) 2026 PageNotes Contributors
+
+詳細は [LICENSE](LICENSE) ファイルを参照してください。
 
 ## 憲章準拠
 
