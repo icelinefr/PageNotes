@@ -214,6 +214,16 @@ export class NoteWidget {
       </div>
     `;
     this.shadowRoot.appendChild(container);
+    // キーイベントの伝播を停止してページ側のショートカットと干渉しないようにする
+    this.shadowRoot.addEventListener("keydown", (e: Event) => {
+      e.stopPropagation();
+    });
+    this.shadowRoot.addEventListener("keypress", (e: Event) => {
+      e.stopPropagation();
+    });
+    this.shadowRoot.addEventListener("keyup", (e: Event) => {
+      e.stopPropagation();
+    });
   }
 
   /**
@@ -525,7 +535,7 @@ export class NoteWidget {
     let startX = 0;
     let startY = 0;
     let initialLeft = 0;
-    let initialBottom = 0;
+    let initialTop = 0;
 
     header.addEventListener("mousedown", (e: MouseEvent) => {
       isDragging = true;
@@ -534,12 +544,13 @@ export class NoteWidget {
 
       const rect = widgetContainer.getBoundingClientRect();
       initialLeft = rect.left;
-      initialBottom = window.innerHeight - rect.bottom;
+      initialTop = rect.top;
 
+      // 固定位置指定をleft/topに切り替え
       widgetContainer.style.right = "auto";
       widgetContainer.style.bottom = "auto";
       widgetContainer.style.left = `${initialLeft}px`;
-      widgetContainer.style.top = `${rect.top}px`;
+      widgetContainer.style.top = `${initialTop}px`;
 
       e.preventDefault();
     });
@@ -547,12 +558,13 @@ export class NoteWidget {
     document.addEventListener("mousemove", (e: MouseEvent) => {
       if (!isDragging) return;
 
+      // マウスの移動量を計算
       const deltaX = e.clientX - startX;
       const deltaY = e.clientY - startY;
 
-      const rect = widgetContainer.getBoundingClientRect();
+      // 初期位置からの相対位置を計算
       widgetContainer.style.left = `${initialLeft + deltaX}px`;
-      widgetContainer.style.top = `${rect.top + deltaY - (e.clientY - startY - deltaY)}px`;
+      widgetContainer.style.top = `${initialTop + deltaY}px`;
     });
 
     document.addEventListener("mouseup", () => {
