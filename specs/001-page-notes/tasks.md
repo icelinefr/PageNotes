@@ -19,11 +19,11 @@
 
 **目的**: プロジェクトの初期化と基本的なChrome拡張機能の構造
 
-- [ ] T001 [plan.md](plan.md)に従ってプロジェクト構造（src/, dist/ディレクトリ）を作成
-- [ ] T002 TypeScript 5.x、esbuild、@types/chrome依存関係を含むpackage.jsonを初期化
-- [ ] T003 [P] ES2020ターゲット、strictモード、chrome型定義を含むtsconfig.jsonを設定
-- [ ] T004 [P] package.jsonにビルドスクリプト（build, watch, clean）を追加（[quickstart.md](quickstart.md)参照）
-- [ ] T005 [research.md](research.md) Decision 1に従ってManifest V3設定を含むsrc/manifest.jsonを作成
+- [X] T001 [plan.md](plan.md)に従ってプロジェクト構造（src/, dist/ディレクトリ）を作成
+- [X] T002 TypeScript 5.x、esbuild、@types/chrome依存関係を含むpackage.jsonを初期化
+- [X] T003 [P] ES2020ターゲット、strictモード、chrome型定義を含むtsconfig.jsonを設定
+- [X] T004 [P] package.jsonにビルドスクリプト（build, watch, clean）を追加（[quickstart.md](quickstart.md)参照）
+- [X] T005 [research.md](research.md) Decision 1に従ってManifest V3設定を含むsrc/manifest.jsonを作成
 
 ---
 
@@ -33,14 +33,14 @@
 
 **⚠️ 重要**: このフェーズが完了するまで、ユーザーストーリーの作業は開始できません
 
-- [ ] T006 [P] [data-model.md](data-model.md)に従ってsrc/types/index.tsにNoteインターフェースを定義
-- [ ] T007 [P] [contracts/message-api.md](contracts/message-api.md)に従ってsrc/types/index.tsにメッセージ型（RequestMessage, ResponseMessage）を定義
-- [ ] T008 [P] [research.md](research.md) Decision 3に従ってsrc/background/url-utils.tsにnormalizeUrl()ヘルパーを実装
-- [ ] T009 [contracts/storage-api.md](contracts/storage-api.md)に従ってsrc/background/storage.tsにcreateNote()を含むストレージAPIラッパーを作成
-- [ ] T010 [contracts/storage-api.md](contracts/storage-api.md)に従ってsrc/background/storage.tsにgetNote()操作を追加
-- [ ] T011 [contracts/message-api.md](contracts/message-api.md)に従ってsrc/background/index.tsにchrome.runtime.onMessageを処理するメッセージリスナーをセットアップ
-- [ ] T012 src/background/index.tsにGET_NOTEメッセージハンドラを実装
-- [ ] T013 src/background/index.tsにCREATE_NOTEメッセージハンドラを実装
+- [X] T006 [P] [data-model.md](data-model.md)に従ってsrc/types/index.tsにNoteインターフェースを定義
+- [X] T007 [P] [contracts/message-api.md](contracts/message-api.md)に従ってsrc/types/index.tsにメッセージ型（RequestMessage, ResponseMessage）を定義
+- [X] T008 [P] [research.md](research.md) Decision 3に従ってsrc/background/url-utils.tsにnormalizeUrl()ヘルパーを実装
+- [X] T009 [contracts/storage-api.md](contracts/storage-api.md)に従ってsrc/background/storage.tsにcreateNote()を含むストレージAPIラッパーを作成
+- [X] T010 [contracts/storage-api.md](contracts/storage-api.md)に従ってsrc/background/storage.tsにgetNote()操作を追加
+- [X] T011 [contracts/message-api.md](contracts/message-api.md)に従ってsrc/background/index.tsにchrome.runtime.onMessageを処理するメッセージリスナーをセットアップ
+- [X] T012 src/background/index.tsにGET_NOTEメッセージハンドラを実装
+- [X] T013 src/background/index.tsにCREATE_NOTEメッセージハンドラを実装
 
 **チェックポイント**: 基盤準備完了 - ユーザーストーリーの実装を並列開始可能
 
@@ -54,19 +54,19 @@
 
 ### ユーザーストーリー 1の実装
 
-- [ ] T014 [P] [US1] [research.md](research.md) Decision 5に従ってsrc/content/note-widget.tsにShadow DOMセットアップを含むNoteWidgetクラスのスケルトンを作成
-- [ ] T015 [P] [US1] src/content/note-widget.tsにウィジェットスタイルを追加（position: fixed、右下隅、Shadow DOM分離）
-- [ ] T016 [US1] spec.md clarificationに従って自動展開でメモコンテンツを表示するshowNote()メソッドをsrc/content/note-widget.tsに実装
-- [ ] T017 [US1] メモ作成UIを処理するcreateNote()メソッドをsrc/content/note-widget.tsに実装
-- [ ] T018 [US1] CREATE_NOTEメッセージを送信する保存ボタンハンドラをsrc/content/note-widget.tsに追加
-- [ ] T019 [US1] [quickstart.md](quickstart.md) Step 14に従ってsrc/content/index.tsにコンテンツスクリプトの初期化を実装
-- [ ] T020 [US1] ページロード時にメモを自動読み込みするためのDOMContentLoadedリスナーをsrc/content/index.tsに追加
-- [ ] T021 [US1] src/content/index.tsでGET_NOTEメッセージを送信し、NoteWidget経由で結果を表示
-- [ ] T022 [US1] spec.md FR-001に従って1〜1,000文字制限の入力検証をsrc/content/note-widget.tsに追加
-- [ ] T023 [US1] [research.md](research.md) Decision 4に従ってSPAサポートのためのMutationObserverをsrc/content/index.tsに実装
-- [ ] T024 [US1] 入力中に「X/1000」を表示する文字カウンターUIをsrc/content/note-widget.tsに追加
-- [ ] T025 [US1] [research.md](research.md) Decision 6に従ってメモ作成後の成功トースト通知をsrc/content/note-widget.tsに追加
-- [ ] T026 [US1] [research.md](research.md) Decision 5に従ってウィジェット位置調整のためのHTML5ドラッグをsrc/content/note-widget.tsに実装
+- [X] T014 [P] [US1] [research.md](research.md) Decision 5に従ってsrc/content/note-widget.tsにShadow DOMセットアップを含むNoteWidgetクラスのスケルトンを作成
+- [X] T015 [P] [US1] src/content/note-widget.tsにウィジェットスタイルを追加（position: fixed、右下隅、Shadow DOM分離）
+- [X] T016 [US1] spec.md clarificationに従って自動展開でメモコンテンツを表示するshowNote()メソッドをsrc/content/note-widget.tsに実装
+- [X] T017 [US1] メモ作成UIを処理するcreateNote()メソッドをsrc/content/note-widget.tsに実装
+- [X] T018 [US1] CREATE_NOTEメッセージを送信する保存ボタンハンドラをsrc/content/note-widget.tsに追加
+- [X] T019 [US1] [quickstart.md](quickstart.md) Step 14に従ってsrc/content/index.tsにコンテンツスクリプトの初期化を実装
+- [X] T020 [US1] ページロード時にメモを自動読み込みするためのDOMContentLoadedリスナーをsrc/content/index.tsに追加
+- [X] T021 [US1] src/content/index.tsでGET_NOTEメッセージを送信し、NoteWidget経由で結果を表示
+- [X] T022 [US1] spec.md FR-001に従って1〜1,000文字制限の入力検証をsrc/content/note-widget.tsに追加
+- [X] T023 [US1] [research.md](research.md) Decision 4に従ってSPAサポートのためのMutationObserverをsrc/content/index.tsに実装
+- [X] T024 [US1] 入力中に「X/1000」を表示する文字カウンターUIをsrc/content/note-widget.tsに追加
+- [X] T025 [US1] [research.md](research.md) Decision 6に従ってメモ作成後の成功トースト通知をsrc/content/note-widget.tsに追加
+- [X] T026 [US1] [research.md](research.md) Decision 5に従ってウィジェット位置調整のためのHTML5ドラッグをsrc/content/note-widget.tsに実装
 
 **チェックポイント**: この時点でユーザーストーリー 1は完全に機能する - ユーザーはメモを作成し、自動的に表示できる
 
@@ -80,15 +80,15 @@
 
 ### ユーザーストーリー 2の実装
 
-- [ ] T027 [US2] [contracts/storage-api.md](contracts/storage-api.md)に従ってsrc/background/storage.tsにupdateNote()操作を追加
-- [ ] T028 [US2] [contracts/message-api.md](contracts/message-api.md)に従ってsrc/background/index.tsにUPDATE_NOTEメッセージハンドラを実装
-- [ ] T029 [US2] src/content/note-widget.tsのメモ表示UIに編集ボタンを追加
-- [ ] T030 [US2] 編集モードを有効にするeditNote()メソッドをsrc/content/note-widget.tsに実装
-- [ ] T031 [US2] UPDATE_NOTEメッセージを送信する更新ボタンハンドラをsrc/content/note-widget.tsに追加
-- [ ] T032 [US2] 保存せずに表示モードに戻すキャンセルボタンをsrc/content/note-widget.tsに実装
-- [ ] T033 [US2] 更新成功後にsrc/content/note-widget.tsでメモ表示を即座に更新
-- [ ] T034 [US2] src/content/note-widget.tsに編集操作の検証（1〜1,000文字）を追加
-- [ ] T035 [US2] メモ更新後の成功トースト通知をsrc/content/note-widget.tsに追加
+- [X] T027 [US2] [contracts/storage-api.md](contracts/storage-api.md)に従ってsrc/background/storage.tsにupdateNote()操作を追加
+- [X] T028 [US2] [contracts/message-api.md](contracts/message-api.md)に従ってsrc/background/index.tsにUPDATE_NOTEメッセージハンドラを実装
+- [X] T029 [US2] src/content/note-widget.tsのメモ表示UIに編集ボタンを追加
+- [X] T030 [US2] 編集モードを有効にするeditNote()メソッドをsrc/content/note-widget.tsに実装
+- [X] T031 [US2] UPDATE_NOTEメッセージを送信する更新ボタンハンドラをsrc/content/note-widget.tsに追加
+- [X] T032 [US2] 保存せずに表示モードに戻すキャンセルボタンをsrc/content/note-widget.tsに実装
+- [X] T033 [US2] 更新成功後にsrc/content/note-widget.tsでメモ表示を即座に更新
+- [X] T034 [US2] src/content/note-widget.tsに編集操作の検証（1〜1,000文字）を追加
+- [X] T035 [US2] メモ更新後の成功トースト通知をsrc/content/note-widget.tsに追加
 
 **チェックポイント**: この時点でユーザーストーリー 1と2の両方が独立して機能する - ユーザーはメモを作成、表示、編集できる
 
@@ -102,13 +102,13 @@
 
 ### ユーザーストーリー 3の実装
 
-- [ ] T036 [US3] [contracts/storage-api.md](contracts/storage-api.md)に従ってsrc/background/storage.tsにdeleteNote()操作を追加
-- [ ] T037 [US3] [contracts/message-api.md](contracts/message-api.md)に従ってsrc/background/index.tsにDELETE_NOTEメッセージハンドラを実装
-- [ ] T038 [US3] src/content/note-widget.tsのメモ表示UIに削除ボタンを追加
-- [ ] T039 [US3] 確認ダイアログを含むdeleteNote()メソッドをsrc/content/note-widget.tsに実装
-- [ ] T040 [US3] 確認時にsrc/content/note-widget.tsでDELETE_NOTEメッセージを送信
-- [ ] T041 [US3] 削除成功後にsrc/content/note-widget.tsでウィジェットをDOMから削除
-- [ ] T042 [US3] メモ削除後の成功トースト通知をsrc/content/note-widget.tsに追加
+- [X] T036 [US3] [contracts/storage-api.md](contracts/storage-api.md)に従ってsrc/background/storage.tsにdeleteNote()操作を追加
+- [X] T037 [US3] [contracts/message-api.md](contracts/message-api.md)に従ってsrc/background/index.tsにDELETE_NOTEメッセージハンドラを実装
+- [X] T038 [US3] src/content/note-widget.tsのメモ表示UIに削除ボタンを追加
+- [X] T039 [US3] 確認ダイアログを含むdeleteNote()メソッドをsrc/content/note-widget.tsに実装
+- [X] T040 [US3] 確認時にsrc/content/note-widget.tsでDELETE_NOTEメッセージを送信
+- [X] T041 [US3] 削除成功後にsrc/content/note-widget.tsでウィジェットをDOMから削除
+- [X] T042 [US3] メモ削除後の成功トースト通知をsrc/content/note-widget.tsに追加
 
 **チェックポイント**: すべてのユーザーストーリーが独立して機能する - 完全なCRUD操作が利用可能
 
@@ -118,8 +118,8 @@
 
 **目的**: 複数のユーザーストーリーに影響する改善とエッジケース処理
 
-- [ ] T043 [P] [contracts/storage-api.md](contracts/storage-api.md)に従ってsrc/background/storage.tsにlistAllNotes()操作を追加
-- [ ] T044 [P] src/background/index.tsにLIST_ALL_NOTESメッセージハンドラを実装
+- [X] T043 [P] [contracts/storage-api.md](contracts/storage-api.md)に従ってsrc/background/storage.tsにlistAllNotes()操作を追加
+- [X] T044 [P] src/background/index.tsにLIST_ALL_NOTESメッセージハンドラを実装
 - [ ] T045 [P] ユーザー通知付きでsrc/background/storage.tsにQUOTA_EXCEEDEDのエラーハンドリングを追加
 - [ ] T046 [P] ユーザー通知付きでsrc/background/storage.tsにINVALID_INPUTのエラーハンドリングを追加
 - [ ] T047 [P] spec.md FR-007に従ってsrc/content/note-widget.tsにウィジェット用のCSS resize: bothを実装
@@ -130,7 +130,7 @@
 - [ ] T052 spec.mdエッジケースに従ってストレージクォータ制限シナリオをテスト
 - [ ] T053 spec.mdエッジケースに従って1,000文字制限の強制をテスト
 - [ ] T054 [quickstart.md](quickstart.md)から完全な手動テストチェックリストを実行
-- [ ] T055 インストールと使用方法の説明を含むREADME.mdを更新
+- [X] T055 インストールと使用方法の説明を含むREADME.mdを更新
 
 ---
 
