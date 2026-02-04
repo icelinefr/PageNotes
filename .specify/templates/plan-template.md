@@ -31,7 +31,11 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] **Clean Code**: Design ensures maintainability (single responsibility, DRY, type safety with TypeScript)
+- [ ] **Simple UX**: User flows are intuitive, minimize cognitive load, provide clear feedback
+- [ ] **Responsive Design**: UI components support mobile-first design with appropriate breakpoints
+- [ ] **Testing Policy**: No test code required (unit/integration/E2E tests excluded)
+- [ ] **Technology Stack**: Implementation uses TypeScript with strict type checking
 
 ## Project Structure
 
@@ -98,7 +102,7 @@ directories captured above]
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+| Violation                  | Why Needed         | Simpler Alternative Rejected Because |
+| -------------------------- | ------------------ | ------------------------------------ |
+| [e.g., 4th project]        | [current need]     | [why 3 projects insufficient]        |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient]  |

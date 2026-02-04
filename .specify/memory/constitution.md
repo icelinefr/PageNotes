@@ -1,50 +1,83 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report:
+- Version: Initial → 1.0.0
+- Added Principles: Clean Code, Simple UX, Responsive Design
+- Technology Stack: TypeScript
+- Templates Status:
+  - ✅ plan-template.md - Constitution Check section aligns with principles
+  - ✅ spec-template.md - User scenarios and requirements align with UX focus
+  - ✅ tasks-template.md - Test tasks marked as OPTIONAL (tests excluded per constitution)
+- Follow-up: None - all placeholders filled
+-->
+
+# PageNotes Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Clean Code (NON-NEGOTIABLE)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+コードの保守性を最優先する。すべてのコードは以下の基準を満たすこと：
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- **可読性**: 変数名・関数名・クラス名は目的を明確に表現する
+- **単一責任**: 各関数・クラスは1つの明確な責任のみを持つ
+- **DRY原則**: 重複コードを避け、共通ロジックは適切に抽出する
+- **適切なコメント**: コードが"何をするか"ではなく"なぜそうするか"を説明する
+- **型安全性**: TypeScriptの型システムを最大限活用し、`any`型の使用は正当化が必要
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**根拠**: 長期的なメンテナンスコストを削減し、チーム全体の生産性を向上させる。
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Simple UX
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+ユーザー体験は直感的でシンプルであること：
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- **認知負荷の最小化**: 操作手順は可能な限り少なくする
+- **一貫性**: UI要素とインタラクションパターンはアプリケーション全体で統一する
+- **即座のフィードバック**: ユーザーアクションに対する応答は視覚的に明確にする
+- **エラーメッセージ**: ユーザーフレンドリーで解決策を示唆する内容とする
+- **アクセシビリティ**: キーボードナビゲーション、スクリーンリーダー対応を考慮する
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**根拠**: ユーザーの学習コストを削減し、アプリケーションの採用率を向上させる。
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### III. Responsive Design
+
+すべてのUIコンポーネントはモバイル端末に対応すること：
+
+- **モバイルファースト**: デザインと実装はモバイル画面サイズから開始する
+- **ブレークポイント**: タブレット・デスクトップサイズへの適切な対応を実装する
+- **タッチ操作**: ボタンサイズ・タップ領域は指での操作に適したサイズとする（最小44x44px推奨）
+- **パフォーマンス**: モバイルネットワーク環境での読み込み時間を最適化する
+- **テスト**: 複数のデバイスサイズで動作確認を行う
+
+**根拠**: 多様なデバイス環境でのユーザー体験を保証し、アプリケーションの到達範囲を最大化する。
+
+## Technology Stack
+
+**Primary Language**: TypeScript
+
+- 厳格な型チェックを有効化（`strict: true`）
+- ES2020以降の機能を活用
+- 最新の安定版を使用
+- 適切な型定義ライブラリ（@types/*）を導入
+
+## Testing Policy
+
+**テストコードは実装しない**:
+
+- 単体テスト（Unit Test）は記述しない
+- 結合テスト（Integration Test）は記述しない
+- E2Eテスト（End-to-End Test）は記述しない
+
+この方針により開発速度を優先し、手動テスト・実運用フィードバックに基づく品質保証を行う。
+
+**注意**: この方針は将来的に見直される可能性がある。変更時は憲章の改訂が必要。
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+本憲章はPageNotesプロジェクトの全開発活動に優先される。
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+- すべての機能実装・コードレビューは本憲章の原則への準拠を確認する
+- 原則に反する実装を行う場合は明確な正当化理由と文書化が必要
+- 憲章の改訂には変更内容の文書化と影響分析が必要
+- 開発ガイダンスは`.specify/memory/`配下のドキュメントを参照する
+
+**Version**: 1.0.0 | **Ratified**: 2026-02-04 | **Last Amended**: 2026-02-04
