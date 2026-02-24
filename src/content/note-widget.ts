@@ -1,4 +1,4 @@
-import type { Note } from "../types/index.js";
+import type { Note, WidgetState } from "../types/index.js";
 
 /**
  * NoteWidget class - manages the floating note UI widget
@@ -8,6 +8,9 @@ export class NoteWidget {
   private container: HTMLDivElement;
   private shadowRoot: ShadowRoot;
   private currentNote: Note | null = null;
+  private isExpanded: boolean = false;
+  private collapsedBar!: HTMLDivElement;
+  private expandedContainer!: HTMLDivElement;
 
   constructor() {
     // Create container element
@@ -19,8 +22,20 @@ export class NoteWidget {
 
     // Initialize styles and structure
     this.initializeStyles();
-    this.initializeStructure();
+    this.initializeStructure(); // Creates both collapsed bar and expanded container
     this.initializeDragAndDrop(); // T026
+
+    // T015: Set initial state to collapsed (will be overridden by initializeWidgetState)
+    this.isExpanded = false;
+    this.updateDisplay();
+
+    // T021: Initialize widget state from storage
+    this.initializeWidgetState().catch((error) => {
+      console.error("Failed to initialize widget state:", error);
+      // Default to collapsed state on error
+      this.isExpanded = false;
+      this.updateDisplay();
+    });
 
     // Append to document body
     document.body.appendChild(this.container);
@@ -53,6 +68,68 @@ export class NoteWidget {
         flex-direction: column;
         resize: both;
         overflow: auto;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-origin: bottom right;
+      }
+
+      /* T009: 畳まれた状態のバーUI */
+      .widget-collapsed-bar {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 200px;
+        height: 48px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        z-index: 2147483647;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+      }
+
+      /* T023: 改善されたホバー効果 */
+      .widget-collapsed-bar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        background-color: #f8f9fa;
+      }
+
+      .collapsed-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        user-select: none;
+      }
+
+      /* T010: 展開/畳むアニメーション用クラス */
+      .widget-container.hidden {
+        display: none;
+      }
+
+      .widget-collapsed-bar.hidden {
+        display: none;
+      }
+
+      /* T025: 畳むボタンのホバー効果 */
+      .collapse-button {
+        background: transparent;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        padding: 4px 8px;
+        color: #666;
+        transition: color 0.2s, background-color 0.2s;
+        border-radius: 4px;
+      }
+
+      .collapse-button:hover {
+        color: #333;
+        background-color: #e8eaed;
       }
 
       .widget-header {
@@ -196,14 +273,36 @@ export class NoteWidget {
   }
 
   /**
-   * Initialize widget HTML structure
+   * Initialize collapsed bar UI (T011)
+   * 畳まれた状態のバーUIを作成
    */
-  private initializeStructure(): void {
-    const container = document.createElement("div");
-    container.className = "widget-container";
-    container.innerHTML = `
+  private initializeCollapsedBar(): void {
+    this.collapsedBar = document.createElement("div");
+    this.collapsedBar.className = "widget-collapsed-bar";
+    this.collapsedBar.title = "クリックしてメモを開く"; // T024: ツールチップ追加
+    this.collapsedBar.innerHTML = `
+      <span class="collapsed-label">PageNotes</span>
+    `;
+
+    // クリックで展開
+    this.collapsedBar.addEventListener("click", () => {
+      this.toggleWidget(true);
+    });
+
+    this.shadowRoot.appendChild(this.collapsedBar);
+  }
+
+  /**
+   * Initialize expanded container UI (T012)
+   * 展開状態のウィジェットUIを作成（既存のinitializeStructure()の内容を移動）
+   */
+  private initializeExpandedContainer(): void {
+    this.expandedContainer = document.createElement("div");
+    this.expandedContainer.className = "widget-container";
+    this.expandedContainer.innerHTML = `
       <div class="widget-header">
         <h3 class="widget-title">PageNotes</h3>
+        <button class="collapse-button" title="畳む">−</button>
       </div>
       <div class="widget-body">
         <div class="empty-state">このページにはメモがありません</div>
@@ -213,7 +312,17 @@ export class NoteWidget {
         <button class="button button-primary">保存</button>
       </div>
     `;
-    this.shadowRoot.appendChild(container);
+
+    // 畳むボタンのイベントリスナー
+    const collapseBtn = this.expandedContainer.querySelector(".collapse-button");
+    if (collapseBtn) {
+      collapseBtn.addEventListener("click", () => {
+        this.toggleWidget(false);
+      });
+    }
+
+    this.shadowRoot.appendChild(this.expandedContainer);
+
     // キーイベントの伝播を停止してページ側のショートカットと干渉しないようにする
     this.shadowRoot.addEventListener("keydown", (e: Event) => {
       e.stopPropagation();
@@ -227,12 +336,21 @@ export class NoteWidget {
   }
 
   /**
+   * Initialize widget HTML structure (deprecated - replaced by initializeCollapsedBar and initializeExpandedContainer)
+   */
+  private initializeStructure(): void {
+    // この関数は後方互換性のため残しますが、実際の初期化は個別のメソッドで行います
+    this.initializeCollapsedBar();
+    this.initializeExpandedContainer();
+  }
+
+  /**
    * Show note content (auto-expanded)
    */
   public showNote(note: Note): void {
     this.currentNote = note;
-    const body = this.shadowRoot.querySelector(".widget-body") as HTMLElement;
-    const footer = this.shadowRoot.querySelector(".widget-footer") as HTMLElement;
+    const body = this.expandedContainer.querySelector(".widget-body") as HTMLElement;
+    const footer = this.expandedContainer.querySelector(".widget-footer") as HTMLElement;
 
     if (body) {
       body.innerHTML = `
@@ -267,8 +385,8 @@ export class NoteWidget {
    * Show create note UI
    */
   public createNote(): void {
-    const body = this.shadowRoot.querySelector(".widget-body") as HTMLElement;
-    const footer = this.shadowRoot.querySelector(".widget-footer") as HTMLElement;
+    const body = this.expandedContainer.querySelector(".widget-body") as HTMLElement;
+    const footer = this.expandedContainer.querySelector(".widget-footer") as HTMLElement;
 
     if (body) {
       body.innerHTML = `
@@ -304,8 +422,8 @@ export class NoteWidget {
   private editNote(): void {
     if (!this.currentNote) return;
 
-    const body = this.shadowRoot.querySelector(".widget-body") as HTMLElement;
-    const footer = this.shadowRoot.querySelector(".widget-footer") as HTMLElement;
+    const body = this.expandedContainer.querySelector(".widget-body") as HTMLElement;
+    const footer = this.expandedContainer.querySelector(".widget-footer") as HTMLElement;
 
     if (body) {
       body.innerHTML = `
@@ -470,7 +588,7 @@ export class NoteWidget {
    * Update character counter (T024)
    */
   private updateCharCounter(length: number): void {
-    const counter = this.shadowRoot.querySelector(".char-counter") as HTMLElement;
+    const counter = this.expandedContainer.querySelector(".char-counter") as HTMLElement;
     if (counter) {
       counter.textContent = `${length}/1000`;
       if (length > 1000) {
@@ -524,53 +642,208 @@ export class NoteWidget {
 
   /**
    * Initialize drag and drop for widget positioning (T026)
+   * ドラッグ＆ドロップは展開状態でのみ動作
    */
   private initializeDragAndDrop(): void {
-    const widgetContainer = this.shadowRoot.querySelector(".widget-container") as HTMLElement;
-    const header = this.shadowRoot.querySelector(".widget-header") as HTMLElement;
+    // Note: expandedContainer is set during initializeStructure()
+    // This will be called after that initialization
+    setTimeout(() => {
+      const widgetContainer = this.expandedContainer;
+      const header = this.expandedContainer.querySelector(".widget-header") as HTMLElement;
 
-    if (!widgetContainer || !header) return;
+      if (!widgetContainer || !header) return;
 
-    let isDragging = false;
-    let startX = 0;
-    let startY = 0;
-    let initialLeft = 0;
-    let initialTop = 0;
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let initialLeft = 0;
+      let initialTop = 0;
 
-    header.addEventListener("mousedown", (e: MouseEvent) => {
-      isDragging = true;
-      startX = e.clientX;
-      startY = e.clientY;
+      header.addEventListener("mousedown", (e: MouseEvent) => {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
 
-      const rect = widgetContainer.getBoundingClientRect();
-      initialLeft = rect.left;
-      initialTop = rect.top;
+        const rect = widgetContainer.getBoundingClientRect();
+        initialLeft = rect.left;
+        initialTop = rect.top;
 
-      // 固定位置指定をleft/topに切り替え
-      widgetContainer.style.right = "auto";
-      widgetContainer.style.bottom = "auto";
-      widgetContainer.style.left = `${initialLeft}px`;
-      widgetContainer.style.top = `${initialTop}px`;
+        // 固定位置指定をleft/topに切り替え
+        widgetContainer.style.right = "auto";
+        widgetContainer.style.bottom = "auto";
+        widgetContainer.style.left = `${initialLeft}px`;
+        widgetContainer.style.top = `${initialTop}px`;
 
-      e.preventDefault();
-    });
+        e.preventDefault();
+      });
 
-    document.addEventListener("mousemove", (e: MouseEvent) => {
-      if (!isDragging) return;
+      document.addEventListener("mousemove", (e: MouseEvent) => {
+        if (!isDragging) return;
 
-      // マウスの移動量を計算
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
+        // マウスの移動量を計算
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
 
-      // 初期位置からの相対位置を計算
-      widgetContainer.style.left = `${initialLeft + deltaX}px`;
-      widgetContainer.style.top = `${initialTop + deltaY}px`;
-    });
+        // 初期位置からの相対位置を計算
+        widgetContainer.style.left = `${initialLeft + deltaX}px`;
+        widgetContainer.style.top = `${initialTop + deltaY}px`;
+      });
 
-    document.addEventListener("mouseup", () => {
-      if (isDragging) {
-        isDragging = false;
+      document.addEventListener("mouseup", () => {
+        if (isDragging) {
+          isDragging = false;
+        }
+      });
+    }, 0);
+  }
+
+  /**
+   * Update display based on isExpanded state (T013)
+   * isExpandedフラグに基づいて表示を切り替え
+   */
+  private updateDisplay(): void {
+    if (this.isExpanded) {
+      this.collapsedBar.classList.add("hidden");
+      this.expandedContainer.classList.remove("hidden");
+    } else {
+      this.collapsedBar.classList.remove("hidden");
+      this.expandedContainer.classList.add("hidden");
+    }
+  }
+
+  /**
+   * Toggle widget expanded/collapsed state (T014, T020)
+   * @param expand - true: 展開, false: 畳む
+   */
+  private toggleWidget(expand: boolean): void {
+    this.isExpanded = expand;
+    this.updateDisplay();
+
+    // T020: 状態をストレージに保存
+    const domain = this.getCurrentDomain();
+    if (domain) {
+      this.saveWidgetState(domain, expand).catch((error) => {
+        console.error("Failed to save widget state after toggle:", error);
+      });
+    }
+  }
+
+  /**
+   * Save widget state to storage (T017)
+   * @param domain - ドメイン名（正規化済み）
+   * @param isExpanded - 展開状態
+   */
+  private async saveWidgetState(domain: string, isExpanded: boolean): Promise<void> {
+    if (!domain) {
+      console.error("Cannot save widget state: domain is empty");
+      return;
+    }
+
+    const state: WidgetState = {
+      isExpanded,
+      domain,
+      lastUpdated: Date.now(),
+    };
+
+    const key = `widget_state:${domain}`;
+
+    try {
+      await chrome.storage.local.set({ [key]: state });
+    } catch (error) {
+      console.error("Failed to save widget state:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Load widget state from storage (T018)
+   * @param domain - ドメイン名（正規化済み）
+   * @returns 保存された状態、または null
+   */
+  private async loadWidgetState(domain: string): Promise<WidgetState | null> {
+    if (!domain) {
+      console.error("Cannot load widget state: domain is empty");
+      return null;
+    }
+
+    const key = `widget_state:${domain}`;
+
+    try {
+      const result = await chrome.storage.local.get(key);
+      const state = result[key];
+
+      if (!state) {
+        return null;
       }
-    });
+
+      // Validate state
+      if (!this.isValidWidgetState(state)) {
+        console.warn("Invalid widget state data:", state);
+        return null;
+      }
+
+      return state;
+    } catch (error) {
+      console.error("Failed to load widget state:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Initialize widget state from storage (T019)
+   * ドメインごとに保存された状態を読み込み、復元する
+   */
+  private async initializeWidgetState(): Promise<void> {
+    const domain = this.getCurrentDomain();
+
+    if (!domain) {
+      // ドメイン取得失敗時はデフォルト状態（畳まれた状態）
+      this.isExpanded = false;
+      this.updateDisplay();
+      return;
+    }
+
+    const state = await this.loadWidgetState(domain);
+
+    if (state) {
+      // 保存された状態を復元
+      this.isExpanded = state.isExpanded;
+    } else {
+      // 初回訪問時はデフォルト状態（畳まれた状態）
+      this.isExpanded = false;
+    }
+
+    this.updateDisplay();
+  }
+
+  /**
+   * Get current domain (normalized) - T007
+   * ドメイン正規化: プロトコル、パス、クエリパラメータを除去
+   */
+  private getCurrentDomain(): string {
+    try {
+      const url = new URL(window.location.href);
+      return url.hostname.toLowerCase();
+    } catch (e) {
+      console.error("Failed to get current domain:", e);
+      return "";
+    }
+  }
+
+  /**
+   * Validate WidgetState object - T008
+   * @param state - 検証対象のオブジェクト
+   * @returns 有効なWidgetStateの場合true
+   */
+  private isValidWidgetState(state: any): state is WidgetState {
+    return (
+      typeof state === "object" &&
+      state !== null &&
+      typeof state.isExpanded === "boolean" &&
+      typeof state.domain === "string" &&
+      state.domain.length > 0 &&
+      typeof state.lastUpdated === "number" &&
+      state.lastUpdated > 0
+    );
   }
 }
