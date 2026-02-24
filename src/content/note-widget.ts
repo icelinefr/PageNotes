@@ -636,9 +636,10 @@ export class NoteWidget {
   }
 
   /**
-   * Remove widget from DOM
+   * Remove widget from DOM and clean up event listeners
    */
   public destroy(): void {
+    this.cleanupDragListeners();
     this.container.remove();
   }
 
