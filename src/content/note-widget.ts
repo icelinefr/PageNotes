@@ -9,8 +9,8 @@ export class NoteWidget {
   private shadowRoot: ShadowRoot;
   private currentNote: Note | null = null;
   private isExpanded: boolean = false;
-  private collapsedBar!: HTMLButtonElement;
-  private expandedContainer!: HTMLDivElement;
+  private collapsedBar: HTMLButtonElement | null = null;
+  private expandedContainer: HTMLDivElement | null = null;
   // For memory leak prevention: store event listeners for cleanup
   private dragListeners: Array<{ target: EventTarget; event: string; handler: EventListener }> = [];
 
@@ -27,16 +27,18 @@ export class NoteWidget {
     this.initializeStructure(); // Creates both collapsed bar and expanded container
     this.initializeDragAndDrop(); // T026
 
-    // T021: Initialize widget state from storage (race condition fix: remove sync updateDisplay)
-    this.initializeWidgetState().catch((error) => {
-      console.error("Failed to initialize widget state:", error);
-      // Default to collapsed state on error
-      this.isExpanded = false;
-      this.updateDisplay();
-    });
-
-    // Append to document body
-    document.body.appendChild(this.container);
+    // T021: Initialize widget state from storage (T8: append DOM only after initialization)
+    this.initializeWidgetState()
+      .catch((error) => {
+        console.error("Failed to initialize widget state:", error);
+        // Default to collapsed state on error
+        this.isExpanded = false;
+        this.updateDisplay();
+      })
+      .finally(() => {
+        // Append to document body only after initialization completes
+        document.body.appendChild(this.container);
+      });
   }
 
   /**
@@ -277,6 +279,7 @@ export class NoteWidget {
    */
   private initializeCollapsedBar(): void {
     this.collapsedBar = document.createElement("button");
+    this.collapsedBar.type = "button"; // T7: Explicit type for clarity
     this.collapsedBar.className = "widget-collapsed-bar";
     this.collapsedBar.title = "クリックしてメモを開く";
     this.collapsedBar.innerHTML = `
@@ -301,14 +304,14 @@ export class NoteWidget {
     this.expandedContainer.innerHTML = `
       <div class="widget-header">
         <h3 class="widget-title">PageNotes</h3>
-        <button class="collapse-button" title="畳む">−</button>
+        <button type="button" class="collapse-button" title="畳む">−</button>
       </div>
       <div class="widget-body">
         <div class="empty-state">このページにはメモがありません</div>
       </div>
       <div class="widget-footer">
         <span class="char-counter">0/1000</span>
-        <button class="button button-primary">保存</button>
+        <button type="button" class="button button-primary">保存</button>
       </div>
     `;
 
@@ -351,6 +354,8 @@ export class NoteWidget {
     // Auto-expand widget when showing a note
     this.toggleWidget(true);
     this.currentNote = note;
+    if (!this.expandedContainer) return;
+    
     const body = this.expandedContainer.querySelector(".widget-body") as HTMLElement;
     const footer = this.expandedContainer.querySelector(".widget-footer") as HTMLElement;
 
@@ -364,8 +369,8 @@ export class NoteWidget {
       footer.innerHTML = `
         <span class="char-counter">${note.content.length}/1000</span>
         <div>
-          <button class="button button-secondary edit-btn">編集</button>
-          <button class="button button-danger delete-btn">削除</button>
+          <button type="button" class="button button-secondary edit-btn">編集</button>
+          <button type="button" class="button button-danger delete-btn">削除</button>
         </div>
       `;
 
@@ -387,6 +392,8 @@ export class NoteWidget {
    * Show create note UI
    */
   public createNote(): void {
+    if (!this.expandedContainer) return;
+    
     const body = this.expandedContainer.querySelector(".widget-body") as HTMLElement;
     const footer = this.expandedContainer.querySelector(".widget-footer") as HTMLElement;
 
@@ -407,7 +414,7 @@ export class NoteWidget {
     if (footer) {
       footer.innerHTML = `
         <span class="char-counter">0/1000</span>
-        <button class="button button-primary save-btn">保存</button>
+        <button type="button" class="button button-primary save-btn">保存</button>
       `;
 
       // Add save button handler (T018)
@@ -422,7 +429,7 @@ export class NoteWidget {
    * Edit existing note (T030)
    */
   private editNote(): void {
-    if (!this.currentNote) return;
+    if (!this.currentNote || !this.expandedContainer) return;
 
     const body = this.expandedContainer.querySelector(".widget-body") as HTMLElement;
     const footer = this.expandedContainer.querySelector(".widget-footer") as HTMLElement;
@@ -445,8 +452,8 @@ export class NoteWidget {
       footer.innerHTML = `
         <span class="char-counter">${this.currentNote.content.length}/1000</span>
         <div>
-          <button class="button button-secondary cancel-btn">キャンセル</button>
-          <button class="button button-primary update-btn">更新</button>
+          <button type="button" class="button button-secondary cancel-btn">キャンセル</button>
+          <button type="button" class="button button-primary update-btn">更新</button>
         </div>
       `;
 
@@ -650,10 +657,12 @@ export class NoteWidget {
    * T1: Added listener cleanup to prevent memory leaks
    */
   private initializeDragAndDrop(): void {
+    if (!this.expandedContainer) return;
+    
     const widgetContainer = this.expandedContainer;
     const header = this.expandedContainer.querySelector(".widget-header") as HTMLElement;
 
-    if (!widgetContainer || !header) return;
+    if (!header) return;
 
     let isDragging = false;
     let startX = 0;
@@ -724,6 +733,8 @@ export class NoteWidget {
    * isExpandedフラグに基づいて表示を切り替え
    */
   private updateDisplay(): void {
+    if (!this.collapsedBar || !this.expandedContainer) return;
+    
     if (this.isExpanded) {
       this.collapsedBar.classList.add("hidden");
       this.expandedContainer.classList.remove("hidden");
