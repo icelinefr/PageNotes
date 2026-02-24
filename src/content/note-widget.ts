@@ -13,6 +13,8 @@ export class NoteWidget {
   private expandedContainer: HTMLDivElement | null = null;
   // For memory leak prevention: store event listeners for cleanup
   private dragListeners: Array<{ target: EventTarget; event: string; handler: EventListener }> = [];
+  // T1: Initialization promise to prevent race conditions with showNote/createNote
+  private initializationPromise: Promise<void>;
 
   constructor() {
     // Create container element
@@ -28,7 +30,7 @@ export class NoteWidget {
     this.initializeDragAndDrop(); // T026
 
     // T021: Initialize widget state from storage (T8: append DOM only after initialization)
-    this.initializeWidgetState()
+    this.initializationPromise = this.initializeWidgetState()
       .catch((error) => {
         console.error("Failed to initialize widget state:", error);
         // Default to collapsed state on error
@@ -287,8 +289,14 @@ export class NoteWidget {
     `;
 
     // クリックで展開（ボタンの native click と keyboard が自動対応）
-    this.collapsedBar.addEventListener("click", () => {
+    const collapsedBarClickHandler: EventListener = () => {
       this.toggleWidget(true);
+    };
+    this.collapsedBar.addEventListener("click", collapsedBarClickHandler);
+    this.dragListeners.push({
+      target: this.collapsedBar,
+      event: "click",
+      handler: collapsedBarClickHandler,
     });
 
     this.shadowRoot.appendChild(this.collapsedBar);
@@ -318,8 +326,14 @@ export class NoteWidget {
     // 畳むボタンのイベントリスナー
     const collapseBtn = this.expandedContainer.querySelector(".collapse-button");
     if (collapseBtn) {
-      collapseBtn.addEventListener("click", () => {
+      const collapseClickHandler: EventListener = () => {
         this.toggleWidget(false);
+      };
+      collapseBtn.addEventListener("click", collapseClickHandler);
+      this.dragListeners.push({
+        target: collapseBtn,
+        event: "click",
+        handler: collapseClickHandler,
       });
     }
 
@@ -350,7 +364,9 @@ export class NoteWidget {
    * Show note content with auto-expand support
    * Ensures widget is expanded so the note is visible (T4)
    */
-  public showNote(note: Note): void {
+  public async showNote(note: Note): Promise<void> {
+    // Await initialization to prevent race condition (T1)
+    await this.initializationPromise;
     // Auto-expand widget when showing a note
     this.toggleWidget(true);
     this.currentNote = note;
@@ -391,7 +407,9 @@ export class NoteWidget {
   /**
    * Show create note UI
    */
-  public createNote(): void {
+  public async createNote(): Promise<void> {
+    // Await initialization to prevent race condition (T1)
+    await this.initializationPromise;
     if (!this.expandedContainer) return;
     
     const body = this.expandedContainer.querySelector(".widget-body") as HTMLElement;
