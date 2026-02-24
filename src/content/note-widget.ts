@@ -9,8 +9,10 @@ export class NoteWidget {
   private shadowRoot: ShadowRoot;
   private currentNote: Note | null = null;
   private isExpanded: boolean = false;
-  private collapsedBar!: HTMLDivElement;
+  private collapsedBar!: HTMLButtonElement;
   private expandedContainer!: HTMLDivElement;
+  // For memory leak prevention: store event listeners for cleanup
+  private dragListeners: Array<{ target: EventTarget; event: string; handler: EventListener }> = [];
 
   constructor() {
     // Create container element
@@ -25,11 +27,7 @@ export class NoteWidget {
     this.initializeStructure(); // Creates both collapsed bar and expanded container
     this.initializeDragAndDrop(); // T026
 
-    // T015: Set initial state to collapsed (will be overridden by initializeWidgetState)
-    this.isExpanded = false;
-    this.updateDisplay();
-
-    // T021: Initialize widget state from storage
+    // T021: Initialize widget state from storage (race condition fix: remove sync updateDisplay)
     this.initializeWidgetState().catch((error) => {
       console.error("Failed to initialize widget state:", error);
       // Default to collapsed state on error
@@ -275,16 +273,17 @@ export class NoteWidget {
   /**
    * Initialize collapsed bar UI (T011)
    * 畳まれた状態のバーUIを作成
+   * Changed from div to button for keyboard accessibility (T3)
    */
   private initializeCollapsedBar(): void {
-    this.collapsedBar = document.createElement("div");
+    this.collapsedBar = document.createElement("button");
     this.collapsedBar.className = "widget-collapsed-bar";
-    this.collapsedBar.title = "クリックしてメモを開く"; // T024: ツールチップ追加
+    this.collapsedBar.title = "クリックしてメモを開く";
     this.collapsedBar.innerHTML = `
       <span class="collapsed-label">PageNotes</span>
     `;
 
-    // クリックで展開
+    // クリックで展開（ボタンの native click と keyboard が自動対応）
     this.collapsedBar.addEventListener("click", () => {
       this.toggleWidget(true);
     });
@@ -345,9 +344,12 @@ export class NoteWidget {
   }
 
   /**
-   * Show note content (auto-expanded)
+   * Show note content with auto-expand support
+   * Ensures widget is expanded so the note is visible (T4)
    */
   public showNote(note: Note): void {
+    // Auto-expand widget when showing a note
+    this.toggleWidget(true);
     this.currentNote = note;
     const body = this.expandedContainer.querySelector(".widget-body") as HTMLElement;
     const footer = this.expandedContainer.querySelector(".widget-footer") as HTMLElement;
@@ -643,58 +645,77 @@ export class NoteWidget {
   /**
    * Initialize drag and drop for widget positioning (T026)
    * ドラッグ＆ドロップは展開状態でのみ動作
+   * T6: Removed setTimeout wrapper (expandedContainer guaranteed to be set)
+   * T1: Added listener cleanup to prevent memory leaks
    */
   private initializeDragAndDrop(): void {
-    // Note: expandedContainer is set during initializeStructure()
-    // This will be called after that initialization
-    setTimeout(() => {
-      const widgetContainer = this.expandedContainer;
-      const header = this.expandedContainer.querySelector(".widget-header") as HTMLElement;
+    const widgetContainer = this.expandedContainer;
+    const header = this.expandedContainer.querySelector(".widget-header") as HTMLElement;
 
-      if (!widgetContainer || !header) return;
+    if (!widgetContainer || !header) return;
 
-      let isDragging = false;
-      let startX = 0;
-      let startY = 0;
-      let initialLeft = 0;
-      let initialTop = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let initialLeft = 0;
+    let initialTop = 0;
 
-      header.addEventListener("mousedown", (e: MouseEvent) => {
-        isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
+    const onMouseDown = (e: MouseEvent) => {
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
 
-        const rect = widgetContainer.getBoundingClientRect();
-        initialLeft = rect.left;
-        initialTop = rect.top;
+      const rect = widgetContainer.getBoundingClientRect();
+      initialLeft = rect.left;
+      initialTop = rect.top;
 
-        // 固定位置指定をleft/topに切り替え
-        widgetContainer.style.right = "auto";
-        widgetContainer.style.bottom = "auto";
-        widgetContainer.style.left = `${initialLeft}px`;
-        widgetContainer.style.top = `${initialTop}px`;
+      // 固定位置指定をleft/topに切り替え
+      widgetContainer.style.right = "auto";
+      widgetContainer.style.bottom = "auto";
+      widgetContainer.style.left = `${initialLeft}px`;
+      widgetContainer.style.top = `${initialTop}px`;
 
-        e.preventDefault();
-      });
+      e.preventDefault();
+    };
 
-      document.addEventListener("mousemove", (e: MouseEvent) => {
-        if (!isDragging) return;
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
 
-        // マウスの移動量を計算
-        const deltaX = e.clientX - startX;
-        const deltaY = e.clientY - startY;
+      // マウスの移動量を計算
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
 
-        // 初期位置からの相対位置を計算
-        widgetContainer.style.left = `${initialLeft + deltaX}px`;
-        widgetContainer.style.top = `${initialTop + deltaY}px`;
-      });
+      // 初期位置からの相対位置を計算
+      widgetContainer.style.left = `${initialLeft + deltaX}px`;
+      widgetContainer.style.top = `${initialTop + deltaY}px`;
+    };
 
-      document.addEventListener("mouseup", () => {
-        if (isDragging) {
-          isDragging = false;
-        }
-      });
-    }, 0);
+    const onMouseUp = () => {
+      if (isDragging) {
+        isDragging = false;
+      }
+    };
+
+    // Add listeners and store for cleanup (T1: memory leak prevention)
+    header.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+
+    this.dragListeners.push(
+      { target: header, event: "mousedown", handler: onMouseDown },
+      { target: document, event: "mousemove", handler: onMouseMove },
+      { target: document, event: "mouseup", handler: onMouseUp }
+    );
+  }
+
+  /**
+   * T1: Cleanup drag and drop listeners to prevent memory leaks
+   */
+  private cleanupDragListeners(): void {
+    for (const listener of this.dragListeners) {
+      listener.target.removeEventListener(listener.event, listener.handler);
+    }
+    this.dragListeners = [];
   }
 
   /**
@@ -735,8 +756,8 @@ export class NoteWidget {
    */
   private async saveWidgetState(domain: string, isExpanded: boolean): Promise<void> {
     if (!domain) {
-      console.error("Cannot save widget state: domain is empty");
-      return;
+      // T2: Throw error as per specification (contracts/widget-state-storage.md)
+      throw new Error("Invalid Domain: domain is empty");
     }
 
     const state: WidgetState = {
