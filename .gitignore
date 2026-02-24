@@ -46,3 +46,4 @@ Desktop.ini
 # Coverage (if testing is added later)
 coverage/
 .nyc_output/
+docs/
