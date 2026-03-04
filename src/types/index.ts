@@ -6,6 +6,16 @@ export interface Note {
   updatedAt: number; // Unix timestamp (milliseconds)
 }
 
+// Widget state - represents the expanded/collapsed state of the widget per domain
+export interface WidgetState {
+  /** ウィジェットが展開されているかどうか */
+  isExpanded: boolean;
+  /** 状態が適用されるドメイン名（正規化済み） */
+  domain: string;
+  /** 最終更新タイムスタンプ（ミリ秒） */
+  lastUpdated: number;
+}
+
 // Storage error types
 export interface StorageError {
   code: "QUOTA_EXCEEDED" | "INVALID_INPUT" | "NOT_FOUND" | "UNKNOWN";

@@ -1,18 +1,18 @@
 <!--
 Sync Impact Report:
-- Version: 1.0.0 → 1.1.0
+- Version: 1.1.0 → 1.2.0
 - Modified Principles:
-  - Added: IV. Japanese Documentation (NEW principle for i18n consistency)
-- Added Sections: New principle section with rationale
+  - Added: V. Commit Message Convention (NEW principle for Git standardization)
+- Added Sections: New principle section with detailed commit message format specifications
 - Removed Sections: None
 - Templates Status:
-  - ✅ plan-template.md - Constitution Check section verified (language-agnostic, no update needed)
-  - ✅ spec-template.md - User scenarios template verified (language-agnostic, no update needed)
-  - ✅ tasks-template.md - Task descriptions already in Japanese, aligns with new principle
-  - ✅ commands/*.md - Agent guidance files verified (no language-specific constraints)
-- Version Bump Rationale: MINOR (1.0.0 → 1.1.0) - New principle added without breaking existing conventions
-- Follow-up: None - all existing code/docs already comply (Japanese comments/docs already in use)
-- Previous Report: Initial → 1.0.0 (ratification on 2026-02-04)
+  - ✅ plan-template.md - Constitution Check section verified (no language-specific constraints)
+  - ✅ spec-template.md - User scenarios template verified (no language-specific constraints)
+  - ✅ tasks-template.md - Task descriptions already in Japanese, aligns with existing principles
+  - ✅ commands/*.md - Agent guidance files verified (commit message format is agent-agnostic)
+- Version Bump Rationale: MINOR (1.1.0 → 1.2.0) - New governance principle for commit message standardization
+- Follow-up: None - new principle is forward-looking guidance, existing commits already follow this pattern
+- Previous Report: 1.0.0 → 1.1.0 (2026-02-04)
 -->
 
 # PageNotes Constitution
@@ -67,6 +67,53 @@ Sync Impact Report:
 
 **根拠**: プロジェクトチームの主要言語が日本語であり、日本語での記述により理解速度と保守性が向上する。コードの識別子は国際的な慣習とライブラリとの統合を考慮し英語を維持する。
 
+### V. Commit Message Convention
+
+すべてのGitコミットメッセージは以下の形式と規則に従うこと：
+
+**形式**: `<type>: <日本語の説明>`
+
+**タイプの種類**（4文字以下の英字）:
+- `docs:` - ドキュメント、仕様書、設計書、計画書、README の作成・更新
+- `feat:` - 新機能の実装、機能拡張、ユーザーが感知する変更
+- `fix:` - バグ修正、既存機能の不具合解決
+- `build:` - ビルド設定、依存関係管理、パッケージマネージャー設定、スクリプト修正
+- `refactor:` - コード構造の改善（動作変更なし、ユーザーに見える変更なし）
+- `chore:` - メタデータの更新、ツール設定の変更、保守タスク
+
+**ルール**:
+- 説明文は日本語で記述する（明確で具体的な内容）
+- 1 行目（タイトル）は 72 文字以内を目安とする
+- 複雑な変更の場合は空行で区切って詳細説明を本文に追加する
+- 関連 Issue がある場合は本文に `Closes #123` 形式で記載する
+- 複数の独立した変更は 1 つのコミットに含めない（原子性を保つ）
+
+**例**:
+```
+docs: Collapsible note-widget の設計・仕様書を追加
+
+specs/002-collapsible-note-widget/ 配下に plan.md, spec.md, tasks.md
+を作成し、機能要件と実装計画を記述しました。
+
+- 機能要件: ウィジェットの展開/折りたたみ機能
+- 実装フェーズ: 6フェーズ（Setup, Foundational, User Story 1-3, Polish）
+- 並列実行可能: タスク分割で効率化対応
+```
+
+```
+feat: WidgetState インターフェースを追加
+```
+
+```
+fix: NoteWidgetのUI操作バグを修正
+```
+
+```
+build: build/clean スクリプトをクロスプラットフォーム対応へ
+```
+
+**根拠**: 統一されたコミット履歴により、プロジェクト履歴の可読性が向上し、変更追跡とロールバックが容易になる。また、自動化ツール（CI/CD、リリースノート生成）との連携が効率化される。
+
 ## Technology Stack
 
 **Primary Language**: TypeScript
@@ -97,4 +144,4 @@ Sync Impact Report:
 - 憲章の改訂には変更内容の文書化と影響分析が必要
 - 開発ガイダンスは`.specify/memory/`配下のドキュメントを参照する
 
-**Version**: 1.0.0 | **Ratified**: 2026-02-04 | **Last Amended**: 2026-02-04
+**Version**: 1.2.0 | **Ratified**: 2026-02-04 | **Last Amended**: 2026-02-24
