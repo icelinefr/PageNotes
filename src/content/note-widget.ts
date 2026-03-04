@@ -11,7 +11,7 @@ export class NoteWidget {
   private isExpanded: boolean = false;
   private collapsedBar: HTMLButtonElement | null = null;
   private expandedContainer: HTMLDivElement | null = null;
-  // For memory leak prevention: store all widget event listeners (drag, click, etc.) for cleanup
+  // For memory leak prevention: store widget event listeners that require manual cleanup
   private eventListeners: Array<{ target: EventTarget; event: string; handler: EventListener }> = [];
   // T1: Initialization promise to prevent race conditions with showNote/createNote
   private initializationPromise: Promise<void>;
