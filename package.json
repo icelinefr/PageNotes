@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "Chrome extension to take notes on web pages",
   "scripts": {
-    "build": "esbuild src/background/index.ts src/content/index.ts --bundle --outdir=dist --platform=browser --target=es2020 --format=esm && node -e \"import('fs').then(fs => fs.copyFileSync('src/manifest.json', 'dist/manifest.json'))\"",
+    "build": "esbuild src/background/index.ts src/content/index.ts --bundle --outdir=dist --platform=browser --target=es2020 --format=esm && node -e \"import('node:fs').then(fs => fs.copyFileSync('src/manifest.json', 'dist/manifest.json'))\"",
     "watch": "npm run build -- --watch",
-    "clean": "node --input-type=module -e \"import('fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\""
+    "clean": "node --input-type=module -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\""
   },
   "keywords": [
     "chrome-extension",
