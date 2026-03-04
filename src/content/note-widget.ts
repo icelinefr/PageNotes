@@ -11,8 +11,8 @@ export class NoteWidget {
   private isExpanded: boolean = false;
   private collapsedBar: HTMLButtonElement | null = null;
   private expandedContainer: HTMLDivElement | null = null;
-  // For memory leak prevention: store event listeners for cleanup
-  private dragListeners: Array<{ target: EventTarget; event: string; handler: EventListener }> = [];
+  // For memory leak prevention: store widget event listeners that require manual cleanup
+  private eventListeners: Array<{ target: EventTarget; event: string; handler: EventListener }> = [];
   // T1: Initialization promise to prevent race conditions with showNote/createNote
   private initializationPromise: Promise<void>;
 
@@ -293,7 +293,7 @@ export class NoteWidget {
       this.toggleWidget(true);
     };
     this.collapsedBar.addEventListener("click", collapsedBarClickHandler);
-    this.dragListeners.push({
+    this.eventListeners.push({
       target: this.collapsedBar,
       event: "click",
       handler: collapsedBarClickHandler,
@@ -330,7 +330,7 @@ export class NoteWidget {
         this.toggleWidget(false);
       };
       collapseBtn.addEventListener("click", collapseClickHandler);
-      this.dragListeners.push({
+      this.eventListeners.push({
         target: collapseBtn,
         event: "click",
         handler: collapseClickHandler,
@@ -361,14 +361,11 @@ export class NoteWidget {
   }
 
   /**
-   * Show note content with auto-expand support
-   * Ensures widget is expanded so the note is visible (T4)
+   * Show note content in the expanded container
    */
   public async showNote(note: Note): Promise<void> {
     // Await initialization to prevent race condition (T1)
     await this.initializationPromise;
-    // Auto-expand widget when showing a note
-    this.toggleWidget(true);
     this.currentNote = note;
     if (!this.expandedContainer) return;
     
@@ -615,6 +612,7 @@ export class NoteWidget {
    * Update character counter (T024)
    */
   private updateCharCounter(length: number): void {
+    if (!this.expandedContainer) return;
     const counter = this.expandedContainer.querySelector(".char-counter") as HTMLElement;
     if (counter) {
       counter.textContent = `${length}/1000`;
@@ -664,7 +662,7 @@ export class NoteWidget {
    * Remove widget from DOM and clean up event listeners
    */
   public destroy(): void {
-    this.cleanupDragListeners();
+    this.cleanupEventListeners();
     this.container.remove();
   }
 
@@ -729,7 +727,7 @@ export class NoteWidget {
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
 
-    this.dragListeners.push(
+    this.eventListeners.push(
       { target: header, event: "mousedown", handler: onMouseDown },
       { target: document, event: "mousemove", handler: onMouseMove },
       { target: document, event: "mouseup", handler: onMouseUp }
@@ -737,13 +735,13 @@ export class NoteWidget {
   }
 
   /**
-   * T1: Cleanup drag and drop listeners to prevent memory leaks
+   * Cleanup all event listeners to prevent memory leaks
    */
-  private cleanupDragListeners(): void {
-    for (const listener of this.dragListeners) {
+  private cleanupEventListeners(): void {
+    for (const listener of this.eventListeners) {
       listener.target.removeEventListener(listener.event, listener.handler);
     }
-    this.dragListeners = [];
+    this.eventListeners = [];
   }
 
   /**
